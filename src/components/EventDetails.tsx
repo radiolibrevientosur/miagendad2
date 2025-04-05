@@ -9,9 +9,16 @@ interface EventDetailsProps {
   onEdit: (event: EventFormData) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  onToggleReminder: (id: string, minutesBefore: number) => void;
 }
 
-export const EventDetails: React.FC<EventDetailsProps> = ({ events, onEdit, onDelete, onToggleFavorite }) => {
+export const EventDetails: React.FC<EventDetailsProps> = ({
+  events,
+  onEdit,
+  onDelete,
+  onToggleFavorite,
+  onToggleReminder,
+}) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const event = events.find(e => e.id === id);
@@ -50,6 +57,7 @@ export const EventDetails: React.FC<EventDetailsProps> = ({ events, onEdit, onDe
             navigate('/');
           }}
           onToggleFavorite={onToggleFavorite}
+          onToggleReminder={onToggleReminder}
         />
       </div>
     </div>

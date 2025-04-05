@@ -48,7 +48,7 @@ export const useEvents = () => {
           const reminderTime = eventTime - (event.reminder.minutesBefore * 60 * 1000);
           const now = new Date().getTime();
 
-          if (now >= reminderTime && now < eventTime) {
+          if (now >= reminderTime && now < eventTime && !event.reminder.triggered) {
             // Play sound
             alarmSound.play().catch(console.error);
 
@@ -60,8 +60,20 @@ export const useEvents = () => {
               });
             }
 
-            // Disable reminder after it's triggered
-            toggleReminder(event.id, event.reminder.minutesBefore, false);
+            // Mark reminder as triggered
+            const updatedEvents = events.map(e => {
+              if (e.id === event.id && e.reminder) {
+                return {
+                  ...e,
+                  reminder: {
+                    ...e.reminder,
+                    triggered: true
+                  }
+                };
+              }
+              return e;
+            });
+            saveEvents(updatedEvents);
           }
         }
       });
@@ -84,7 +96,7 @@ export const useEvents = () => {
         acc[event.id] = event.reminder;
       }
       return acc;
-    }, {} as Record<string, { enabled: boolean; minutesBefore: number }>);
+    }, {} as Record<string, { enabled: boolean; minutesBefore: number; triggered?: boolean }>);
     localStorage.setItem(REMINDERS_KEY, JSON.stringify(reminders));
     
     setEvents(newEvents);
@@ -94,7 +106,7 @@ export const useEvents = () => {
     const newEvent = {
       ...event,
       id: crypto.randomUUID(),
-      isFavorite: false,
+      isFavorite: event.isFavorite || false,
     };
     const newEvents = [...events, newEvent];
     saveEvents(newEvents);
@@ -128,7 +140,7 @@ export const useEvents = () => {
     );
   };
 
-  const toggleReminder = (id: string, minutesBefore: number, enabled = true) => {
+  const toggleReminder = (id: string, minutesBefore: number) => {
     // Request notification permission if needed
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
@@ -139,13 +151,15 @@ export const useEvents = () => {
         ? {
             ...event,
             reminder: {
-              enabled,
+              enabled: true,
               minutesBefore,
+              triggered: false
             },
           }
         : event
     );
     saveEvents(newEvents);
+    toast.success('Recordatorio configurado exitosamente');
   };
 
   const filteredEvents = events.filter(event => {

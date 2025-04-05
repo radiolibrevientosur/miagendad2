@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { EventFormData } from '../types';
-import { Calendar, MapPin, Users, Edit, Trash2, Share2, Download, Copy, QrCode, Heart, Bell } from 'lucide-react';
+import { Calendar, MapPin, Users, Edit, Trash2, Share2, Download, Copy, Heart, Bell } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { FacebookShareButton, TwitterShareButton, WhatsappShareButton } from 'react-share';
-import QRCode from 'react-qr-code';
 import toast from 'react-hot-toast';
 
 interface EventCardProps {
@@ -24,31 +23,12 @@ export const EventCard: React.FC<EventCardProps> = ({
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
   const [reminderMinutes, setReminderMinutes] = useState(30);
-  const eventUrl = `${window.location.origin}/event/${event.id}`;
   
   const generateShareMessage = () => {
     return `📢 ${event.title}\n` +
            `📅 ${new Date(event.datetime).toLocaleDateString()} | 🕒 ${new Date(event.datetime).toLocaleTimeString()}\n` +
            `📍 ${event.location}\n` +
-           `🔗 ${eventUrl}\n` +
            `#CulturaViva #Eventos`;
-  };
-
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: event.title,
-          text: generateShareMessage(),
-          url: eventUrl,
-        });
-      } catch (err) {
-        console.error('Error sharing:', err);
-        setIsShareModalOpen(true);
-      }
-    } else {
-      setIsShareModalOpen(true);
-    }
   };
 
   const handleCopyText = async () => {
@@ -58,16 +38,6 @@ export const EventCard: React.FC<EventCardProps> = ({
     } catch (err) {
       console.error('Error copying text:', err);
       toast.error('Error al copiar el texto');
-    }
-  };
-
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(eventUrl);
-      toast.success('Enlace copiado al portapapeles');
-    } catch (err) {
-      console.error('Error copying link:', err);
-      toast.error('Error al copiar el enlace');
     }
   };
 
@@ -138,7 +108,7 @@ export const EventCard: React.FC<EventCardProps> = ({
                 <Edit size={20} />
               </button>
               <button
-                onClick={handleShare}
+                onClick={() => setIsShareModalOpen(true)}
                 className="p-2 text-gray-600 hover:text-purple-600 transition-colors"
               >
                 <Share2 size={20} />
@@ -185,40 +155,26 @@ export const EventCard: React.FC<EventCardProps> = ({
               <h3 className="text-lg font-semibold mb-4">Compartir Evento</h3>
               
               <div className="space-y-4">
-                {/* QR Code */}
-                <div className="flex justify-center mb-4">
-                  <QRCode value={eventUrl} size={150} />
-                </div>
-
                 {/* Share Buttons */}
                 <div className="flex justify-center space-x-4 mb-4">
-                  <WhatsappShareButton url={eventUrl} title={generateShareMessage()}>
+                  <WhatsappShareButton url="" title={generateShareMessage()}>
                     <div className="p-2 bg-green-500 text-white rounded-full hover:bg-green-600">
                       <Share2 size={24} />
                     </div>
                   </WhatsappShareButton>
                   
-                  <FacebookShareButton url={eventUrl} quote={generateShareMessage()}>
+                  <FacebookShareButton url="" quote={generateShareMessage()}>
                     <div className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700">
                       <Share2 size={24} />
                     </div>
                   </FacebookShareButton>
                   
-                  <TwitterShareButton url={eventUrl} title={generateShareMessage()}>
+                  <TwitterShareButton url="" title={generateShareMessage()}>
                     <div className="p-2 bg-blue-400 text-white rounded-full hover:bg-blue-500">
                       <Share2 size={24} />
                     </div>
                   </TwitterShareButton>
                 </div>
-
-                {/* Copy Link Button */}
-                <button
-                  onClick={handleCopyLink}
-                  className="w-full flex items-center justify-center space-x-2 p-2 border border-gray-300 rounded-md hover:bg-gray-50"
-                >
-                  <Copy size={20} />
-                  <span>Copiar Enlace</span>
-                </button>
 
                 {/* Copy Text Button */}
                 <button

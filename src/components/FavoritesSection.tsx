@@ -8,6 +8,7 @@ interface FavoritesSectionProps {
   onEdit: (event: EventFormData) => void;
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
+  onToggleReminder: (id: string, minutesBefore: number) => void;
 }
 
 export const FavoritesSection: React.FC<FavoritesSectionProps> = ({
@@ -15,17 +16,13 @@ export const FavoritesSection: React.FC<FavoritesSectionProps> = ({
   onEdit,
   onDelete,
   onToggleFavorite,
+  onToggleReminder,
 }) => {
   const favoriteEvents = events.filter(event => event.isFavorite);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      className="p-4 space-y-6"
-    >
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Eventos Favoritos</h2>
+    <div className="space-y-6">
+      <h2 className="text-2xl font-bold text-gray-900">Eventos Favoritos</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {favoriteEvents.map(event => (
@@ -34,7 +31,8 @@ export const FavoritesSection: React.FC<FavoritesSectionProps> = ({
             event={event}
             onEdit={onEdit}
             onDelete={onDelete}
-            onToggleFavorite={() => onToggleFavorite(event.id)}
+            onToggleFavorite={onToggleFavorite}
+            onToggleReminder={onToggleReminder}
           />
         ))}
         {favoriteEvents.length === 0 && (
@@ -43,6 +41,6 @@ export const FavoritesSection: React.FC<FavoritesSectionProps> = ({
           </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };
