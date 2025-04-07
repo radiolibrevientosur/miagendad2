@@ -8,16 +8,16 @@ interface EventDetailsProps {
   events: EventFormData[];
   onEdit: (event: EventFormData) => void;
   onDelete: (id: string) => void;
-  onToggleFavorite: (id: string) => void;
   onToggleReminder: (id: string, minutesBefore: number) => void;
+  onToggleFavorite: (id: string) => void;
 }
 
 export const EventDetails: React.FC<EventDetailsProps> = ({
   events,
   onEdit,
   onDelete,
-  onToggleFavorite,
   onToggleReminder,
+  onToggleFavorite,
 }) => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -56,8 +56,8 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
             onDelete(eventId);
             navigate('/');
           }}
-          onToggleFavorite={onToggleFavorite}
           onToggleReminder={onToggleReminder}
+          onToggleFavorite={onToggleFavorite}
         />
       </div>
     </div>

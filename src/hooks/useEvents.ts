@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { EventFormData, EventFilters } from '../types';
+import { EventFormData, EventFilters, Recurrence } from '../types';
 import { toast } from 'react-hot-toast';
 
 const STORAGE_KEY = 'cultural-events';
-const FAVORITES_KEY = 'favorite-events';
 const REMINDERS_KEY = 'event-reminders';
 
 const alarmSound = new Audio('/alarm.mp3');
@@ -18,26 +17,26 @@ export const useEvents = () => {
   });
 
   useEffect(() => {
-    const storedEvents = localStorage.getItem(STORAGE_KEY);
-    const storedFavorites = localStorage.getItem(FAVORITES_KEY);
-    const storedReminders = localStorage.getItem(REMINDERS_KEY);
-    
-    if (storedEvents) {
-      const parsedEvents = JSON.parse(storedEvents);
-      if (storedFavorites) {
-        const favorites = JSON.parse(storedFavorites);
-        parsedEvents.forEach((event: EventFormData) => {
-          event.isFavorite = favorites.includes(event.id);
-        });
+    const loadStoredData = () => {
+      const storedEvents = localStorage.getItem(STORAGE_KEY);
+      const storedReminders = localStorage.getItem(REMINDERS_KEY);
+      
+      if (storedEvents) {
+        const parsedEvents = JSON.parse(storedEvents);
+        setEvents(parsedEvents);
       }
-      if (storedReminders) {
+
+      if (storedReminders && storedEvents) {
+        const parsedEvents = JSON.parse(storedEvents);
         const reminders = JSON.parse(storedReminders);
         parsedEvents.forEach((event: EventFormData) => {
           event.reminder = reminders[event.id];
         });
+        setEvents(parsedEvents);
       }
-      setEvents(parsedEvents);
-    }
+    };
+
+    loadStoredData();
   }, []);
 
   useEffect(() => {
@@ -49,10 +48,8 @@ export const useEvents = () => {
           const now = new Date().getTime();
 
           if (now >= reminderTime && now < eventTime && !event.reminder.triggered) {
-            // Play sound
             alarmSound.play().catch(console.error);
 
-            // Show notification
             if ('Notification' in window && Notification.permission === 'granted') {
               new Notification('Recordatorio de Evento', {
                 body: `El evento "${event.title}" comenzará en ${event.reminder.minutesBefore} minutos`,
@@ -60,7 +57,6 @@ export const useEvents = () => {
               });
             }
 
-            // Mark reminder as triggered
             const updatedEvents = events.map(e => {
               if (e.id === event.id && e.reminder) {
                 return {
@@ -79,17 +75,73 @@ export const useEvents = () => {
       });
     };
 
-    const interval = setInterval(checkReminders, 60000); // Check every minute
+    const interval = setInterval(checkReminders, 60000);
     return () => clearInterval(interval);
   }, [events]);
 
+  const generateRecurringEvents = (baseEvent: EventFormData): EventFormData[] => {
+    const events: EventFormData[] = [];
+    const baseDate = new Date(baseEvent.datetime);
+    const recurrence = baseEvent.recurrence;
+
+    switch (recurrence.type) {
+      case 'diaria':
+        // Generar eventos para los próximos 30 días
+        for (let i = 0; i < 30; i++) {
+          const newDate = new Date(baseDate);
+          newDate.setDate(newDate.getDate() + i);
+          events.push({
+            ...baseEvent,
+            id: crypto.randomUUID(),
+            datetime: newDate.toISOString(),
+          });
+        }
+        break;
+
+      case 'anual':
+        // Generar eventos para los próximos 3 años
+        for (let i = 0; i < 3; i++) {
+          const newDate = new Date(baseDate);
+          newDate.setFullYear(newDate.getFullYear() + i);
+          events.push({
+            ...baseEvent,
+            id: crypto.randomUUID(),
+            datetime: newDate.toISOString(),
+          });
+        }
+        break;
+
+      case 'personalizada':
+        if (recurrence.daysOfWeek?.length) {
+          const endDate = recurrence.endDate ? new Date(recurrence.endDate) : null;
+          const maxOccurrences = recurrence.occurrences || 52; // Default to 52 weeks if no occurrences specified
+          let currentDate = new Date(baseDate);
+          let occurrenceCount = 0;
+
+          while ((!endDate || currentDate <= endDate) && occurrenceCount < maxOccurrences) {
+            const dayOfWeek = currentDate.toLocaleDateString('es-ES', { weekday: 'long' });
+            if (recurrence.daysOfWeek.includes(dayOfWeek)) {
+              events.push({
+                ...baseEvent,
+                id: crypto.randomUUID(),
+                datetime: currentDate.toISOString(),
+              });
+              occurrenceCount++;
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+        }
+        break;
+
+      default:
+        events.push(baseEvent);
+    }
+
+    return events;
+  };
+
   const saveEvents = (newEvents: EventFormData[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newEvents));
-    
-    const favorites = newEvents
-      .filter(event => event.isFavorite)
-      .map(event => event.id);
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
     
     const reminders = newEvents.reduce((acc, event) => {
       if (event.reminder) {
@@ -103,14 +155,15 @@ export const useEvents = () => {
   };
 
   const addEvent = (event: Omit<EventFormData, 'id'>) => {
-    const newEvent = {
+    const baseEvent = {
       ...event,
       id: crypto.randomUUID(),
-      isFavorite: event.isFavorite || false,
-    };
-    const newEvents = [...events, newEvent];
+    } as EventFormData;
+
+    const recurringEvents = generateRecurringEvents(baseEvent);
+    const newEvents = [...events, ...recurringEvents];
     saveEvents(newEvents);
-    toast.success('Evento creado exitosamente');
+    toast.success('Evento(s) creado(s) exitosamente');
   };
 
   const updateEvent = (event: EventFormData) => {
@@ -125,23 +178,7 @@ export const useEvents = () => {
     toast.success('Evento eliminado exitosamente');
   };
 
-  const toggleFavorite = (id: string) => {
-    const newEvents = events.map(event =>
-      event.id === id
-        ? { ...event, isFavorite: !event.isFavorite }
-        : event
-    );
-    saveEvents(newEvents);
-    const event = newEvents.find(e => e.id === id);
-    toast.success(
-      event?.isFavorite
-        ? 'Evento agregado a favoritos'
-        : 'Evento eliminado de favoritos'
-    );
-  };
-
   const toggleReminder = (id: string, minutesBefore: number) => {
-    // Request notification permission if needed
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
     }
@@ -177,7 +214,6 @@ export const useEvents = () => {
     addEvent,
     updateEvent,
     deleteEvent,
-    toggleFavorite,
     toggleReminder,
     filters,
     setFilters,

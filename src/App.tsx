@@ -5,8 +5,8 @@ import { EventForm } from './components/EventForm';
 import { EventList } from './components/EventList';
 import { EventDetails } from './components/EventDetails';
 import { Navbar } from './components/Navbar';
-import { FavoritesSection } from './components/FavoritesSection';
 import { ProfileEditor } from './components/ProfileEditor';
+import { FavoritesSection } from './components/FavoritesSection';
 import { useEvents } from './hooks/useEvents';
 import { EventFormData, ActiveSection } from './types';
 import { Toaster } from 'react-hot-toast';
@@ -19,7 +19,17 @@ function App() {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
   });
-  const { events, addEvent, updateEvent, deleteEvent, toggleFavorite, toggleReminder, filters, setFilters } = useEvents();
+  
+  const {
+    events,
+    addEvent,
+    updateEvent,
+    deleteEvent,
+    toggleReminder,
+    toggleFavorite,
+    filters,
+    setFilters
+  } = useEvents();
 
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
@@ -35,11 +45,7 @@ function App() {
     if (editingEvent) {
       updateEvent({ ...eventData, id: editingEvent.id });
     } else {
-      const newEvent = {
-        ...eventData,
-        isFavorite: true // Set new events as favorites by default
-      };
-      addEvent(newEvent);
+      addEvent(eventData);
     }
     setActiveSection(null);
   };
@@ -66,11 +72,19 @@ function App() {
                 onDelete={deleteEvent}
                 filters={filters}
                 onFilterChange={setFilters}
-                onToggleFavorite={toggleFavorite}
                 onToggleReminder={toggleReminder}
+                onToggleFavorite={toggleFavorite}
               />
             </div>
           </motion.div>
+        );
+      case 'create':
+        return (
+          <EventForm
+            onSubmit={handleSubmit}
+            onClose={handleCloseForm}
+            initialData={editingEvent}
+          />
         );
       case 'favorites':
         return (
@@ -85,19 +99,11 @@ function App() {
                 events={events}
                 onEdit={handleEdit}
                 onDelete={deleteEvent}
-                onToggleFavorite={toggleFavorite}
                 onToggleReminder={toggleReminder}
+                onToggleFavorite={toggleFavorite}
               />
             </div>
           </motion.div>
-        );
-      case 'create':
-        return (
-          <EventForm
-            onSubmit={handleSubmit}
-            onClose={handleCloseForm}
-            initialData={editingEvent}
-          />
         );
       case 'profile':
         return (
@@ -157,20 +163,21 @@ function App() {
                     onDelete={deleteEvent}
                     filters={filters}
                     onFilterChange={setFilters}
-                    onToggleFavorite={toggleFavorite}
                     onToggleReminder={toggleReminder}
+                    onToggleFavorite={toggleFavorite}
                   />
                 }
               />
               <Route
                 path="/event/:id"
                 element={
+                  
                   <EventDetails
                     events={events}
                     onEdit={handleEdit}
                     onDelete={deleteEvent}
-                    onToggleFavorite={toggleFavorite}
                     onToggleReminder={toggleReminder}
+                    onToggleFavorite={toggleFavorite}
                   />
                 }
               />

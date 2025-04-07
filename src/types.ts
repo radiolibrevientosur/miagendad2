@@ -1,3 +1,12 @@
+export type RecurrenceType = "una vez" | "diaria" | "anual" | "personalizada";
+
+export interface Recurrence {
+  type: RecurrenceType;
+  endDate?: string;
+  daysOfWeek?: string[];
+  occurrences?: number;
+}
+
 export interface EventFormData {
   id: string;
   title: string;
@@ -16,11 +25,12 @@ export interface EventFormData {
     isFree: boolean;
     amount?: number;
   };
-  isFavorite?: boolean;
   reminder?: {
     enabled: boolean;
     minutesBefore: number;
+    triggered?: boolean;
   };
+  recurrence: Recurrence;
 }
 
 export type EventFilters = {
@@ -37,4 +47,4 @@ export interface UserProfile {
   theme?: 'light' | 'dark';
 }
 
-export type ActiveSection = 'search' | 'favorites' | 'create' | 'profile' | null;
+export type ActiveSection = 'search' | 'create' | 'profile' | null;
