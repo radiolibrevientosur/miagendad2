@@ -39,7 +39,6 @@ const eventSchema = z.object({
   description: z.string().min(10, 'La descripción debe tener al menos 10 caracteres'),
   category: z.enum(CATEGORIES),
   eventType: z.string().min(1, 'Selecciona un tipo de evento'),
-  discipline: z.enum(['Teatro', 'Danza', 'Artes Visuales', 'Música', 'Literatura'] as const),
   date: z.string().min(1, 'La fecha es requerida'),
   location: z.string().min(3, 'La ubicación es requerida'),
   targetAudience: z.enum(['Infantil', 'Adultos', 'Todos']),
