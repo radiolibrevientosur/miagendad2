@@ -28,7 +28,7 @@ function Dashboard() {
           onComplete={() => setEditingEvent(null)} 
         />
       ) : (
-        <div className="space-y-12">
+        <div className="space-y-5">
           {/* Eventos Culturales */}
           <section>
             <div className="flex justify-between items-center mb-6">
