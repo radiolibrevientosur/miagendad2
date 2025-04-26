@@ -32,6 +32,14 @@ function Dashboard() {
           {/* Eventos Culturales */}
           <section>
             <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Eventos Culturales</h2>
+              <button
+                onClick={() => setEditingEvent(null)}
+                className="px-4 py-2 bg-cultural-escenicas text-white rounded-lg hover:bg-cultural-escenicas/90 transition-colors flex items-center gap-2"
+              >
+                <PlusCircle className="h-5 w-5" />
+                Nuevo Evento
+              </button>
             </div>
             {state.events.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -60,6 +68,14 @@ function Dashboard() {
           {/* Próximos Cumpleaños */}
           <section>
             <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Próximos Cumpleaños</h2>
+              <button
+                onClick={() => {}}
+                className="px-4 py-2 bg-cultural-visuales text-white rounded-lg hover:bg-cultural-visuales/90 transition-colors flex items-center gap-2"
+              >
+                <PlusCircle className="h-5 w-5" />
+                Nuevo Cumpleaños
+              </button>
             </div>
             {state.birthdays.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -84,6 +100,14 @@ function Dashboard() {
           {/* Tareas */}
           <section>
             <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tareas</h2>
+              <button
+                onClick={() => {}}
+                className="px-4 py-2 bg-cultural-musicales text-white rounded-lg hover:bg-cultural-musicales/90 transition-colors flex items-center gap-2"
+              >
+                <PlusCircle className="h-5 w-5" />
+                Nueva Tarea
+              </button>
             </div>
             {state.tasks.length > 0 ? (
               <TaskCulturalKanban />
