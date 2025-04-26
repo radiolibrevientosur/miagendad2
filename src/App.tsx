@@ -28,21 +28,12 @@ function Dashboard() {
           onComplete={() => setEditingEvent(null)} 
         />
       ) : (
-        <div className="space-y-5">
+        <>
           {/* Eventos Culturales */}
           <section>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Eventos Culturales</h2>
-              <button
-                onClick={() => setEditingEvent(null)}
-                className="px-4 py-2 bg-cultural-escenicas text-white rounded-lg hover:bg-cultural-escenicas/90 transition-colors flex items-center gap-2"
-              >
-                <PlusCircle className="h-5 w-5" />
-                Nuevo Evento
-              </button>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Eventos Culturales</h2>
             {state.events.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {state.events.map(event => (
                   <EventCard 
                     key={event.id} 
@@ -52,79 +43,34 @@ function Dashboard() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No hay eventos creados</p>
-                <button
-                  onClick={() => setEditingEvent(null)}
-                  className="mt-4 px-4 py-2 text-cultural-escenicas hover:text-cultural-escenicas/90 font-medium"
-                >
-                  Crear primer evento
-                </button>
-              </div>
+              <p className="text-gray-500 dark:text-gray-400">No hay eventos creados</p>
             )}
           </section>
 
           {/* Próximos Cumpleaños */}
           <section>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Próximos Cumpleaños</h2>
-              <button
-                onClick={() => {}}
-                className="px-4 py-2 bg-cultural-visuales text-white rounded-lg hover:bg-cultural-visuales/90 transition-colors flex items-center gap-2"
-              >
-                <PlusCircle className="h-5 w-5" />
-                Nuevo Cumpleaños
-              </button>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Próximos Cumpleaños</h2>
             {state.birthdays.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {state.birthdays.map(birthday => (
                   <BirthdayCulturalCard key={birthday.id} birthday={birthday} />
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No hay cumpleaños registrados</p>
-                <button
-                  onClick={() => {}}
-                  className="mt-4 px-4 py-2 text-cultural-visuales hover:text-cultural-visuales/90 font-medium"
-                >
-                  Registrar primer cumpleaños
-                </button>
-              </div>
+              <p className="text-gray-500 dark:text-gray-400">No hay cumpleaños registrados</p>
             )}
           </section>
 
           {/* Tareas */}
           <section>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Tareas</h2>
-              <button
-                onClick={() => {}}
-                className="px-4 py-2 bg-cultural-musicales text-white rounded-lg hover:bg-cultural-musicales/90 transition-colors flex items-center gap-2"
-              >
-                <PlusCircle className="h-5 w-5" />
-                Nueva Tarea
-              </button>
-            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Tareas</h2>
             {state.tasks.length > 0 ? (
               <TaskCulturalKanban />
             ) : (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <Calendar className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-500 dark:text-gray-400">No hay tareas creadas</p>
-                <button
-                  onClick={() => {}}
-                  className="mt-4 px-4 py-2 text-cultural-musicales hover:text-cultural-musicales/90 font-medium"
-                >
-                  Crear primera tarea
-                </button>
-              </div>
+              <p className="text-gray-500 dark:text-gray-400">No hay tareas creadas</p>
             )}
           </section>
-        </div>
+        </>
       )}
     </div>
   );
@@ -132,39 +78,28 @@ function Dashboard() {
 
 function CreateMenu({ onSelectOption }: { onSelectOption: (view: ActiveView) => void }) {
   return (
-    <div className="p-4 space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Crear Nuevo</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="p-4 space-y-4">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Crear Nuevo</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button 
           onClick={() => onSelectOption('nuevo-evento')}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-all group"
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-left"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-lg text-cultural-escenicas">Evento Cultural</h3>
-            <Calendar className="h-6 w-6 text-cultural-escenicas opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
+          <h3 className="font-medium text-lg text-cultural-escenicas mb-2">Evento Cultural</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">Crear un nuevo evento cultural con todos los detalles</p>
         </button>
-
         <button 
           onClick={() => onSelectOption('nuevo-cumpleanos')}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-all group"
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-left"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-lg text-cultural-visuales">Cumpleaños</h3>
-            <Calendar className="h-6 w-6 text-cultural-visuales opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
+          <h3 className="font-medium text-lg text-cultural-visuales mb-2">Cumpleaños</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">Agregar un nuevo cumpleaños al calendario</p>
         </button>
-
         <button 
           onClick={() => onSelectOption('nueva-tarea')}
-          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-all group"
+          className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-left"
         >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-lg text-cultural-musicales">Tarea</h3>
-            <Calendar className="h-6 w-6 text-cultural-musicales opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
+          <h3 className="font-medium text-lg text-cultural-musicales mb-2">Tarea</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">Crear una nueva tarea o recordatorio</p>
         </button>
       </div>
@@ -182,13 +117,14 @@ function Favorites() {
   
   return (
     <div className="p-4 space-y-8">
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Favoritos</h2>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Favoritos</h2>
+      
       
       {/* Eventos Favoritos */}
       <section>
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Eventos Favoritos</h3>
+        <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Eventos Favoritos</h3>
         {favoriteEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {favoriteEvents.map(event => (
               <EventCard 
                 key={event.id} 
@@ -198,41 +134,35 @@ function Favorites() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <Heart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">No hay eventos favoritos</p>
-          </div>
+          <p className="text-gray-500 dark:text-gray-400">No hay eventos favoritos</p>
         )}
       </section>
 
       {/* Cumpleaños Favoritos */}
       <section>
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Cumpleaños Favoritos</h3>
+        <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Cumpleaños Favoritos</h3>
         {favoriteBirthdays.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {favoriteBirthdays.map(birthday => (
               <BirthdayCulturalCard key={birthday.id} birthday={birthday} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <Heart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">No hay cumpleaños favoritos</p>
-          </div>
+          <p className="text-gray-500 dark:text-gray-400">No hay cumpleaños favoritos</p>
         )}
       </section>
 
       {/* Tareas Favoritas */}
       <section>
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Tareas Favoritas</h3>
+        <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Tareas Favoritas</h3>
         {favoriteTasks.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {favoriteTasks.map(task => (
-              <div key={task.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div key={task.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                 <h4 className="font-medium text-gray-900 dark:text-white">{task.title}</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{task.description}</p>
-                <div className="mt-4">
-                  <span className={`inline-block px-2 py-1 text-sm rounded ${
+                <p className="text-sm text-gray-500 dark:text-gray-400">{task.description}</p>
+                <div className="mt-2 text-sm">
+                  <span className={`inline-block px-2 py-1 rounded ${
                     task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                     task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -244,31 +174,25 @@ function Favorites() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <Heart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">No hay tareas favoritas</p>
-          </div>
+          <p className="text-gray-500 dark:text-gray-400">No hay tareas favoritas</p>
         )}
       </section>
 
       {/* Contactos Favoritos */}
       <section>
-        <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Contactos Favoritos</h3>
+        <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-4">Contactos Favoritos</h3>
         {favoriteContacts.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {favoriteContacts.map(contact => (
-              <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div key={contact.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
                 <h4 className="font-medium text-gray-900 dark:text-white">{contact.name}</h4>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{contact.role}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{contact.role}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{contact.discipline}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <Heart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500 dark:text-gray-400">No hay contactos favoritos</p>
-          </div>
+          <p className="text-gray-500 dark:text-gray-400">No hay contactos favoritos</p>
         )}
       </section>
     </div>
@@ -332,7 +256,7 @@ function App() {
             <div className="flex justify-around h-16">
               <button
                 onClick={() => setActiveView('inicio')}
-                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'inicio' ? 'text-cultural-escenicas' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
@@ -341,7 +265,7 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveView('crear')}
-                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'crear' ? 'text-cultural-escenicas' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
@@ -350,7 +274,7 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveView('favoritos')}
-                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'favoritos' ? 'text-cultural-visuales' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
@@ -359,7 +283,7 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveView('calendario')}
-                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'calendario' ? 'text-cultural-musicales' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
@@ -368,7 +292,7 @@ function App() {
               </button>
               <button
                 onClick={() => setActiveView('contactos')}
-                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'contactos' ? 'text-cultural-musicales' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
