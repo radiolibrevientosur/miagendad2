@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CulturalProvider } from './context/CulturalContext';
-import { Calendar, Heart, Users, Home, PlusCircle, Sun, Moon, MoreVertical, Settings, Bell, LogOut, User } from 'lucide-react';
+import { Calendar, Heart, Users, Home, PlusCircle, Sun, Moon, MoreVertical, Settings, Bell, LogOut, User, Search } from 'lucide-react';
 import { EventoCulturalForm } from './components/cultural/EventoCulturalForm';
 import { BirthdayForm } from './components/cultural/BirthdayForm';
 import { TaskForm } from './components/cultural/TaskForm';
@@ -11,6 +11,10 @@ import { CalendarView } from './components/cultural/CalendarView';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import { NotificationList } from './components/ui/NotificationList';
 import { NotificationSettings } from './components/ui/NotificationSettings';
+import { UserProfile } from './components/cultural/UserProfile';
+import { LanguageSettings } from './components/ui/LanguageSettings';
+import { PrivacySettings } from './components/ui/PrivacySettings';
+import { SearchModal } from './components/ui/SearchModal';
 import { useTheme } from './hooks/useTheme';
 import { useNotifications } from './hooks/useNotifications';
 import { useCultural } from './context/CulturalContext';
@@ -43,7 +47,6 @@ function Dashboard() {
   const { state } = useCultural();
   const [editingEvent, setEditingEvent] = useState<CulturalEvent | null>(null);
 
-  // Validación de datos críticos
   const safeEvents = state.events || [];
   const safeBirthdays = state.birthdays || [];
   const safeTasks = state.tasks || [];
@@ -119,6 +122,10 @@ function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showLanguageSettings, setShowLanguageSettings] = useState(false);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const configRef = useRef<HTMLDivElement>(null);
   const { unreadCount, isPermissionGranted, requestNotificationPermission } = useNotifications();
@@ -145,6 +152,10 @@ function App() {
   };
 
   const renderView = () => {
+    if (showProfile) {
+      return <UserProfile />;
+    }
+
     switch (activeView) {
       case 'crear':
         return <CreateMenu onSelectOption={setActiveView} />;
@@ -172,6 +183,9 @@ function App() {
         {showNotifications && (
           <NotificationList onClose={() => setShowNotifications(false)} />
         )}
+        {showSearchModal && (
+          <SearchModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
+        )}
         <header className="bg-white dark:bg-gray-800 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
@@ -182,96 +196,120 @@ function App() {
                 </span>
               </div>
               
-              <div className="relative" ref={menuRef}>
+              <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  onClick={() => setShowSearchModal(true)}
                   className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  <MoreVertical className="h-6 w-6" />
+                  <Search className="h-6 w-6" />
                 </button>
+                
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <MoreVertical className="h-6 w-6" />
+                  </button>
 
-                {isMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50">
-                    <button
-                      onClick={() => setShowNotifications(true)}
-                      className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
-                    >
-                      <div className="flex items-center">
-                        <Bell className="h-4 w-4 mr-2" />
-                        Notificaciones
-                      </div>
-                      {unreadCount > 0 && (
-                        <span className="bg-cultural-escenicas text-white text-xs px-2 py-1 rounded-full">
-                          {unreadCount}
-                        </span>
-                      )}
-                    </button>
-
-                    <NotificationSettings
-                      onChange={(enabled) => {
-                        if (enabled && !isPermissionGranted) {
-                          requestNotificationPermission();
-                        }
-                      }}
-                    />
-
-                    <button
-                      className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                    >
-                      <User className="h-4 w-4 mr-2" />
-                      Mi Cuenta
-                    </button>
-
-                    <button
-                      className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                      onClick={toggleTheme}
-                    >
-                      {theme === 'dark' ? (
-                        <Sun className="h-4 w-4 mr-2" />
-                      ) : (
-                        <Moon className="h-4 w-4 mr-2" />
-                      )}
-                      Modo {theme === 'dark' ? 'Claro' : 'Oscuro'}
-                    </button>
-
-                    <div className="relative" ref={configRef}>
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50">
                       <button
+                        onClick={() => setShowNotifications(true)}
                         className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
-                        onClick={() => setIsConfigOpen(!isConfigOpen)}
                       >
                         <div className="flex items-center">
-                          <Settings className="h-4 w-4 mr-2" />
-                          Configuración
+                          <Bell className="h-4 w-4 mr-2" />
+                          Notificaciones
                         </div>
-                        <span className="text-xs">▼</span>
+                        {unreadCount > 0 && (
+                          <span className="bg-cultural-escenicas text-white text-xs px-2 py-1 rounded-full">
+                            {unreadCount}
+                          </span>
+                        )}
                       </button>
 
-                      {isConfigOpen && (
-                        <div className="absolute left-0 top-full w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 mt-1 z-50">
-                          <button className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                            Idioma
-                          </button>
-                          <button className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                            Privacidad
-                          </button>
-                          <button className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                            Sincronización
-                          </button>
-                        </div>
-                      )}
+                      <NotificationSettings
+                        onChange={(enabled) => {
+                          if (enabled && !isPermissionGranted) {
+                            requestNotificationPermission();
+                          }
+                        }}
+                      />
+
+                      <button
+                        onClick={() => {
+                          setShowProfile(true);
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Mi Cuenta
+                      </button>
+
+                      <button
+                        className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                        onClick={toggleTheme}
+                      >
+                        {theme === 'dark' ? (
+                          <Sun className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Moon className="h-4 w-4 mr-2" />
+                        )}
+                        Modo {theme === 'dark' ? 'Claro' : 'Oscuro'}
+                      </button>
+
+                      <div className="relative" ref={configRef}>
+                        <button
+                          className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
+                          onClick={() => setIsConfigOpen(!isConfigOpen)}
+                        >
+                          <div className="flex items-center">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Configuración
+                          </div>
+                          <span className="text-xs">▼</span>
+                        </button>
+
+                        {isConfigOpen && (
+                          <div className="absolute left-0 top-full w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 mt-1 z-50">
+                            <button
+                              onClick={() => {
+                                setShowLanguageSettings(true);
+                                setIsMenuOpen(false);
+                                setIsConfigOpen(false);
+                              }}
+                              className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Idioma
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowPrivacySettings(true);
+                                setIsMenuOpen(false);
+                                setIsConfigOpen(false);
+                              }}
+                              className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Privacidad
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <hr className="my-1 border-gray-200 dark:border-gray-700" />
+
+                      <button
+                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Cerrar Sesión
+                      </button>
                     </div>
-
-                    <hr className="my-1 border-gray-200 dark:border-gray-700" />
-
-                    <button
-                      className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="h-4 w-4 mr-2" />
-                      Cerrar Sesión
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -283,9 +321,18 @@ function App() {
               FallbackComponent={ErrorFallback}
               onReset={() => {
                 setActiveView('inicio');
+                setShowProfile(false);
+                setShowLanguageSettings(false);
+                setShowPrivacySettings(false);
               }}
             >
-              {renderView()}
+              {showLanguageSettings ? (
+                <LanguageSettings />
+              ) : showPrivacySettings ? (
+                <PrivacySettings />
+              ) : (
+                renderView()
+              )}
             </ErrorBoundary>
           </div>
         </main>
@@ -294,7 +341,10 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-around h-16">
               <button
-                onClick={() => setActiveView('inicio')}
+                onClick={() => {
+                  setActiveView('inicio');
+                  setShowProfile(false);
+                }}
                 className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'inicio' ? 'text-cultural-escenicas' : 'text-gray-500 dark:text-gray-400'
                 }`}
@@ -303,7 +353,10 @@ function App() {
                 <span className="mt-1 text-xs">Inicio</span>
               </button>
               <button
-                onClick={() => setActiveView('crear')}
+                onClick={() => {
+                  setActiveView('crear');
+                  setShowProfile(false);
+                }}
                 className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'crear' ? 'text-cultural-escenicas' : 'text-gray-500 dark:text-gray-400'
                 }`}
@@ -312,7 +365,10 @@ function App() {
                 <span className="mt-1 text-xs">Crear</span>
               </button>
               <button
-                onClick={() => setActiveView('favoritos')}
+                onClick={() => {
+                  setActiveView('favoritos');
+                  setShowProfile(false);
+                }}
                 className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'favoritos' ? 'text-cultural-visuales' : 'text-gray-500 dark:text-gray-400'
                 }`}
@@ -321,7 +377,10 @@ function App() {
                 <span className="mt-1 text-xs">Favoritos</span>
               </button>
               <button
-                onClick={() => setActiveView('calendario')}
+                onClick={() => {
+                  setActiveView('calendario');
+                  setShowProfile(false);
+                }}
                 className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'calendario' ? 'text-cultural-musicales' : 'text-gray-500 dark:text-gray-400'
                 }`}
@@ -330,7 +389,10 @@ function App() {
                 <span className="mt-1 text-xs">Calendario</span>
               </button>
               <button
-                onClick={() => setActiveView('contactos')}
+                onClick={() => {
+                  setActiveView('contactos');
+                  setShowProfile(false);
+                }}
                 className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                   activeView === 'contactos' ? 'text-cultural-musicales' : 'text-gray-500 dark:text-gray-400'
                 }`}

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import type { CulturalEvent, ArtistBirthday, CulturalTask, Contact, CulturalContextType, CulturalAction, Notification } from '../types/cultural';
+import type { CulturalEvent, ArtistBirthday, CulturalTask, Contact, CulturalContextType, CulturalAction, Notification, ReactionType, Comment } from '../types/cultural';
 
 const initialState: CulturalContextType['state'] = {
   events: [],
@@ -19,7 +19,12 @@ const loadInitialState = (): CulturalContextType['state'] => {
       return {
         events: (parsedState.events || []).map((event: any) => ({
           ...event,
-          date: new Date(event.date)
+          date: new Date(event.date),
+          reactions: event.reactions || { like: 0, love: 0, celebrate: 0, interesting: 0 },
+          comments: (event.comments || []).map((comment: any) => ({
+            ...comment,
+            date: new Date(comment.date)
+          }))
         })),
         birthdays: (parsedState.birthdays || []).map((birthday: any) => ({
           ...birthday,
@@ -51,7 +56,14 @@ const culturalReducer = (state: CulturalContextType['state'], action: CulturalAc
   try {
     switch (action.type) {
       case 'ADD_EVENT':
-        return { ...state, events: [...state.events, action.payload] };
+        return { 
+          ...state, 
+          events: [...state.events, {
+            ...action.payload,
+            reactions: { like: 0, love: 0, celebrate: 0, interesting: 0 },
+            comments: []
+          }] 
+        };
       
       case 'UPDATE_EVENT':
         return {
@@ -65,6 +77,31 @@ const culturalReducer = (state: CulturalContextType['state'], action: CulturalAc
         return {
           ...state,
           events: state.events.filter(event => event.id !== action.payload)
+        };
+
+      case 'ADD_REACTION':
+        return {
+          ...state,
+          events: state.events.map(event => 
+            event.id === action.payload.eventId ? {
+              ...event,
+              reactions: {
+                ...event.reactions,
+                [action.payload.reactionType]: event.reactions[action.payload.reactionType] + 1
+              }
+            } : event
+          )
+        };
+
+      case 'ADD_COMMENT':
+        return {
+          ...state,
+          events: state.events.map(event => 
+            event.id === action.payload.eventId ? {
+              ...event,
+              comments: [...event.comments, action.payload.comment]
+            } : event
+          )
         };
 
       case 'ADD_BIRTHDAY':

@@ -21,6 +21,17 @@ export type EventType = {
   'OTROS': [];
 }[Category];
 
+// Nuevos tipos añadidos
+export type ReactionType = 'like' | 'love' | 'celebrate' | 'interesting';
+
+export interface Comment {
+  id: string;
+  eventId: string;
+  author: string;
+  text: string;
+  date: Date;
+}
+
 export interface Notification {
   id: string;
   title: string;
@@ -63,6 +74,9 @@ export interface CulturalEvent {
     endDate?: string;
     daysOfWeek?: number[];
   };
+  // Nuevas propiedades añadidas
+  reactions: Record<ReactionType, number>;
+  comments: Comment[];
 }
 
 export interface ArtistBirthday {
@@ -128,6 +142,7 @@ export interface CulturalContextType {
   dispatch: React.Dispatch<CulturalAction>;
 }
 
+// Acciones actualizadas
 export type CulturalAction =
   | { type: 'ADD_EVENT'; payload: CulturalEvent }
   | { type: 'UPDATE_EVENT'; payload: CulturalEvent }
@@ -145,4 +160,7 @@ export type CulturalAction =
   | { type: 'ADD_NOTIFICATION'; payload: Notification }
   | { type: 'MARK_NOTIFICATION_READ'; payload: string }
   | { type: 'DELETE_NOTIFICATION'; payload: string }
-  | { type: 'LOAD_STATE'; payload: CulturalContextType['state'] };
+  | { type: 'LOAD_STATE'; payload: CulturalContextType['state'] }
+  // Nuevas acciones añadidas
+  | { type: 'ADD_REACTION'; payload: { eventId: string; reactionType: ReactionType } }
+  | { type: 'ADD_COMMENT'; payload: { eventId: string; comment: Comment } };
