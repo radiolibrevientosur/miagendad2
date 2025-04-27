@@ -118,10 +118,10 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
           <div className="mt-4 flex items-center justify-between">
             <div className="flex space-x-2">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cultural-escenicas/10 text-cultural-escenicas">
-                {event.eventType}
+                {event.category}
               </span>
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cultural-escenicas/10 text-cultural-escenicas">
-                {event.discipline}
+                {event.eventType}
               </span>
             </div>
           </div>
