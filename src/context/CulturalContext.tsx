@@ -48,80 +48,78 @@ const loadInitialState = (): CulturalContextType['state'] => {
 };
 
 const culturalReducer = (state: CulturalContextType['state'], action: CulturalAction): CulturalContextType['state'] => {
-  let newState: CulturalContextType['state'];
-
   try {
     switch (action.type) {
       case 'ADD_EVENT':
-        newState = { ...state, events: [...state.events, action.payload] };
-        break;
+        return { ...state, events: [...state.events, action.payload] };
+      
       case 'UPDATE_EVENT':
-        newState = {
+        return {
           ...state,
           events: state.events.map(event =>
             event.id === action.payload.id ? action.payload : event
           )
         };
-        break;
+
       case 'DELETE_EVENT':
-        newState = {
+        return {
           ...state,
           events: state.events.filter(event => event.id !== action.payload)
         };
-        break;
+
       case 'ADD_BIRTHDAY':
-        newState = { ...state, birthdays: [...state.birthdays, action.payload] };
-        break;
+        return { ...state, birthdays: [...state.birthdays, action.payload] };
+
       case 'UPDATE_BIRTHDAY':
-        newState = {
+        return {
           ...state,
           birthdays: state.birthdays.map(birthday =>
             birthday.id === action.payload.id ? action.payload : birthday
           )
         };
-        break;
+
       case 'DELETE_BIRTHDAY':
-        newState = {
+        return {
           ...state,
           birthdays: state.birthdays.filter(birthday => birthday.id !== action.payload)
         };
-        break;
+
       case 'ADD_TASK':
-        newState = { ...state, tasks: [...state.tasks, action.payload] };
-        break;
+        return { ...state, tasks: [...state.tasks, action.payload] };
+
       case 'UPDATE_TASK':
-        newState = {
+        return {
           ...state,
           tasks: state.tasks.map(task =>
             task.id === action.payload.id ? action.payload : task
           )
         };
-        break;
+
       case 'DELETE_TASK':
-        newState = {
+        return {
           ...state,
           tasks: state.tasks.filter(task => task.id !== action.payload)
         };
-        break;
+
       case 'ADD_CONTACT':
-        newState = { ...state, contacts: [...state.contacts, action.payload] };
-        break;
+        return { ...state, contacts: [...state.contacts, action.payload] };
+
       case 'UPDATE_CONTACT':
-        newState = {
+        return {
           ...state,
           contacts: state.contacts.map(contact =>
             contact.id === action.payload.id ? action.payload : contact
           )
         };
-        break;
+
       case 'DELETE_CONTACT':
-        newState = {
+        return {
           ...state,
           contacts: state.contacts.filter(contact => contact.id !== action.payload)
         };
-        break;
+
       case 'ADD_MULTIPLE_CONTACTS':
-        newState = {
+        return {
           ...state,
           contacts: [
             ...state.contacts,
@@ -131,15 +129,15 @@ const culturalReducer = (state: CulturalContextType['state'], action: CulturalAc
             }))
           ]
         };
-        break;
+
       case 'ADD_NOTIFICATION':
-        newState = {
+        return {
           ...state,
           notifications: [action.payload, ...state.notifications]
         };
-        break;
+
       case 'MARK_NOTIFICATION_READ':
-        newState = {
+        return {
           ...state,
           notifications: state.notifications.map(notification =>
             notification.id === action.payload
@@ -147,24 +145,18 @@ const culturalReducer = (state: CulturalContextType['state'], action: CulturalAc
               : notification
           )
         };
-        break;
+
       case 'DELETE_NOTIFICATION':
-        newState = {
+        return {
           ...state,
           notifications: state.notifications.filter(
             notification => notification.id !== action.payload
           )
         };
-        break;
-      case 'LOAD_STATE':
-        newState = action.payload;
-        break;
+
       default:
         return state;
     }
-
-    localStorage.setItem('cultural_management_state', JSON.stringify(newState));
-    return newState;
   } catch (error) {
     console.error('Error in reducer:', error);
     return state;
@@ -175,11 +167,8 @@ export const CulturalProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [state, dispatch] = useReducer(culturalReducer, initialState, loadInitialState);
 
   useEffect(() => {
-    const savedState = loadInitialState();
-    if (savedState !== initialState) {
-      dispatch({ type: 'LOAD_STATE', payload: savedState });
-    }
-  }, []);
+    localStorage.setItem('cultural_management_state', JSON.stringify(state));
+  }, [state]);
 
   return (
     <CulturalContext.Provider value={{ state, dispatch }}>

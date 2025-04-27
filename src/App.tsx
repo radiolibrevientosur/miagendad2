@@ -9,13 +9,35 @@ import { Favorites } from './components/cultural/Favorites';
 import { ContactList } from './components/cultural/ContactList';
 import { CalendarView } from './components/cultural/CalendarView';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
-import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import { NotificationList } from './components/ui/NotificationList';
+import { NotificationSettings } from './components/ui/NotificationSettings';
 import { useTheme } from './hooks/useTheme';
+import { useNotifications } from './hooks/useNotifications';
 import { useCultural } from './context/CulturalContext';
 import type { ActiveView, CulturalEvent } from './types/cultural';
 import { EventCard } from './components/cultural/EventCard';
 import { BirthdayCulturalCard } from './components/cultural/BirthdayCulturalCard';
 import { TaskCulturalKanban } from './components/cultural/TaskCulturalKanban';
+import { ErrorBoundary } from 'react-error-boundary';
+
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  return (
+    <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+      <h2 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
+        Error en el componente
+      </h2>
+      <p className="text-red-600 dark:text-red-400 text-sm">
+        {error.message}
+      </p>
+      <button
+        onClick={resetErrorBoundary}
+        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+      >
+        Reintentar
+      </button>
+    </div>
+  );
+}
 
 function Dashboard() {
   const { state } = useCultural();
@@ -96,8 +118,10 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const configRef = useRef<HTMLDivElement>(null);
+  const { unreadCount, isPermissionGranted, requestNotificationPermission } = useNotifications();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -145,6 +169,9 @@ function App() {
     <CulturalProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
         <OfflineIndicator />
+        {showNotifications && (
+          <NotificationList onClose={() => setShowNotifications(false)} />
+        )}
         <header className="bg-white dark:bg-gray-800 shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
@@ -166,11 +193,27 @@ function App() {
                 {isMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50">
                     <button
-                      className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                      onClick={() => setShowNotifications(true)}
+                      className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
                     >
-                      <Bell className="h-4 w-4 mr-2" />
-                      Notificaciones
+                      <div className="flex items-center">
+                        <Bell className="h-4 w-4 mr-2" />
+                        Notificaciones
+                      </div>
+                      {unreadCount > 0 && (
+                        <span className="bg-cultural-escenicas text-white text-xs px-2 py-1 rounded-full">
+                          {unreadCount}
+                        </span>
+                      )}
                     </button>
+
+                    <NotificationSettings
+                      onChange={(enabled) => {
+                        if (enabled && !isPermissionGranted) {
+                          requestNotificationPermission();
+                        }
+                      }}
+                    />
 
                     <button
                       className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
@@ -236,7 +279,12 @@ function App() {
 
         <main className="flex-1 max-w-7xl w-full mx-auto py-6 sm:px-6 lg:px-8 mb-16">
           <div className="px-4 py-6 sm:px-0">
-            <ErrorBoundary>
+            <ErrorBoundary
+              FallbackComponent={ErrorFallback}
+              onReset={() => {
+                setActiveView('inicio');
+              }}
+            >
               {renderView()}
             </ErrorBoundary>
           </div>
