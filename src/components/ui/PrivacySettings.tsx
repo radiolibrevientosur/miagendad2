@@ -59,7 +59,7 @@ export const PrivacySettings: React.FC = () => {
 
         <div>
           <button
-            onClick={() => window.open('/privacy-policy', '_blank')}
+            onClick={() => window.open('src/components/ui/PrivacyPolicy.tsx', '_blank')}
             className="flex items-center space-x-2 text-cultural-escenicas hover:underline"
           >
             <Shield className="h-5 w-5" />
