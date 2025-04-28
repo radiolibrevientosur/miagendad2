@@ -93,7 +93,7 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
       <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="relative bg-white dark:bg-gray-800 w-full max-w-2xl rounded-xl shadow-2xl">
-          <div className="p-5">
+          <div className="p-6">
             <div className="flex justify-between items-center mb-4">
               <div className="relative flex-1 mr-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
