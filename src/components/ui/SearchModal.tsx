@@ -1,220 +1,258 @@
 import React, { useState } from 'react';
-import { Search, Calendar, Users, CheckSquare, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { 
+  Calendar, 
+  MapPin, 
+  Users, 
+  Share2, 
+  Heart, 
+  Edit, 
+  Trash, 
+  MessageCircle, 
+  ThumbsUp, 
+  Zap, 
+  PartyPopper, 
+  Send 
+} from 'lucide-react';
+import type { CulturalEvent, ReactionType, Comment } from '../../types/cultural';
 import { useCultural } from '../../context/CulturalContext';
+import { ShareModal } from './ShareModal';
+import { EventoCulturalForm } from './EventoCulturalForm';
 
-type SearchResult = {
-  id: string;
-  title: string;
-  type: 'event' | 'birthday' | 'task' | 'contact';
-  description?: string;
-};
+interface EventCardProps {
+  event: CulturalEvent;
+  onEdit?: (event: CulturalEvent) => void;
+}
 
-export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
-  isOpen,
-  onClose,
-}) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState<string>('all');
-  const { state } = useCultural();
+export const EventCard: React.FC<EventCardProps> = ({ event, onEdit }) => {
+  const { dispatch } = useCultural();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [commentAuthor, setCommentAuthor] = useState('');
 
-  const getResults = (): SearchResult[] => {
-    if (!searchTerm) return [];
-
-    const term = searchTerm.toLowerCase();
-    let results: SearchResult[] = [];
-
-    if (filter === 'all' || filter === 'events') {
-      const eventResults = state.events
-        .filter(event => 
-          event.title.toLowerCase().includes(term) ||
-          event.description.toLowerCase().includes(term)
-        )
-        .map(event => ({
-          id: event.id,
-          title: event.title,
-          description: event.description,
-          type: 'event' as const
-        }));
-      results = [...results, ...eventResults];
-    }
-
-    if (filter === 'all' || filter === 'birthdays') {
-      const birthdayResults = state.birthdays
-        .filter(birthday => 
-          birthday.name.toLowerCase().includes(term)
-        )
-        .map(birthday => ({
-          id: birthday.id,
-          title: birthday.name,
-          description: birthday.role,
-          type: 'birthday' as const
-        }));
-      results = [...results, ...birthdayResults];
-    }
-
-    if (filter === 'all' || filter === 'tasks') {
-      const taskResults = state.tasks
-        .filter(task => 
-          task.title.toLowerCase().includes(term) ||
-          task.description.toLowerCase().includes(term)
-        )
-        .map(task => ({
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          type: 'task' as const
-        }));
-      results = [...results, ...taskResults];
-    }
-
-    if (filter === 'all' || filter === 'contacts') {
-      const contactResults = state.contacts
-        .filter(contact => 
-          contact.name.toLowerCase().includes(term)
-        )
-        .map(contact => ({
-          id: contact.id,
-          title: contact.name,
-          description: contact.role,
-          type: 'contact' as const
-        }));
-      results = [...results, ...contactResults];
-    }
-
-    return results;
+  const toggleFavorite = () => {
+    dispatch({
+      type: 'UPDATE_EVENT',
+      payload: { ...event, isFavorite: !event.isFavorite }
+    });
   };
 
-  const results = getResults();
+  const handleDelete = () => {
+    if (window.confirm('¿Estás seguro de eliminar este evento?')) {
+      dispatch({
+        type: 'DELETE_EVENT',
+        payload: event.id
+      });
+    }
+  };
 
-  if (!isOpen) return null;
+  const handleReaction = (reactionType: ReactionType) => {
+    dispatch({
+      type: 'ADD_REACTION',
+      payload: { eventId: event.id, reactionType }
+    });
+  };
+
+  const handleAddComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim() || !commentAuthor.trim()) return;
+
+    const comment: Comment = {
+      id: crypto.randomUUID(),
+      eventId: event.id,
+      author: commentAuthor,
+      text: newComment,
+      date: new Date()
+    };
+
+    dispatch({
+      type: 'ADD_COMMENT',
+      payload: { eventId: event.id, comment }
+    });
+
+    setNewComment('');
+    setCommentAuthor('');
+  };
+
+  if (isEditing) {
+    return (
+      <EventoCulturalForm
+        event={event}
+        onComplete={() => setIsEditing(false)}
+      />
+    );
+  }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
-      <div className="relative min-h-screen flex items-center justify-center p-4">
-        <div className="relative bg-white dark:bg-gray-800 w-full max-w-2xl rounded-xl shadow-2xl">
-          <div className="p-3">
-            <div className="flex justify-between items-center mb-4">
-              <div className="relative flex-1 mr-4">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="text"
-                  placeholder="Buscar..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-cultural-escenicas focus:border-transparent dark:bg-gray-700 dark:text-white"
-                  autoFocus
-                />
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-              >
-                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-              </button>
-            </div>
+    <>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-6">
+        {event.image?.data && (
+          <div className="relative h-48 w-full">
+            <img
+              src={event.image.data}
+              alt={event.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
 
-            <div className="flex justify-center md:justify-start space-x-2 mb-4 w-full"> 
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  filter === 'all'
-                    ? 'bg-cultural-escenicas text-white'
-                    : 'bg-gray-100 dark:bg-gray-00 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Todos
-              </button>
-              <button
-                onClick={() => setFilter('events')}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  filter === 'events'
-                    ? 'bg-cultural-escenicas text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Eventos
-              </button>
-              <button
-                onClick={() => setFilter('tasks')}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  filter === 'tasks'
-                    ? 'bg-cultural-escenicas text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Tareas
-              </button>
-             
+        <div className="p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {event.title}
+              </h3>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                {event.description}
+              </p>
             </div>
-<div className="flex justify-center md:justify-start space-x-2 mb-4 w-full"> 
+            <div className="flex space-x-2">
               <button
-                onClick={() => setFilter('contacts')}
-                className={`px-2 py-1 rounded-full text-sm ${
-                  filter === 'contacts'
-                    ? 'bg-cultural-escenicas text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
+                onClick={() => setIsShareModalOpen(true)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
               >
-                Contactos
-              </button><button
-                onClick={() => setFilter('birthdays')}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  filter === 'birthdays'
-                    ? 'bg-cultural-escenicas text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
+                <Share2 className="h-5 w-5" />
+              </button>
+              <button
+                onClick={toggleFavorite}
+                className={`p-2 ${event.isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
               >
-                Cumpleaños
-              </button></div>
-            <div className="max-h-96 overflow-y-auto">
-              {results.length > 0 ? (
-                <div className="space-y-2">
-                  {results.map((result) => (
-                    <div
-                      key={result.id}
-                      className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg cursor-pointer"
-                    >
-                      <div className="flex items-center space-x-3">
-                        {result.type === 'event' && (
-                          <Calendar className="h-5 w-5 text-cultural-escenicas" />
-                        )}
-                        {result.type === 'birthday' && (
-                          <Calendar className="h-5 w-5 text-cultural-visuales" />
-                        )}
-                        {result.type === 'task' && (
-                          <CheckSquare className="h-5 w-5 text-cultural-musicales" />
-                        )}
-                        {result.type === 'contact' && (
-                          <Users className="h-5 w-5 text-cultural-escenicas" />
-                        )}
-                        <div>
-                          <h3 className="font-medium text-gray-900 dark:text-white">
-                            {result.title}
-                          </h3>
-                          {result.description && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {result.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : searchTerm ? (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  No se encontraron resultados
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  Comienza a escribir para buscar
-                </div>
+                <Heart className="h-5 w-5" fill={event.isFavorite ? "currentColor" : "none"} />
+              </button>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+              >
+                <Edit className="h-5 w-5" />
+              </button>
+              <button
+                onClick={handleDelete}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+              >
+                <Trash className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2 mb-6">
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <Calendar className="h-4 w-4 mr-2" />
+              <span>
+                {format(event.date, "d 'de' MMMM 'a las' HH:mm", { locale: es })}
+              </span>
+            </div>
+            
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <MapPin className="h-4 w-4 mr-2" />
+              <span>{event.location}</span>
+              {event.locationUrl && (
+                <a
+                  href={event.locationUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 text-cultural-escenicas hover:underline"
+                >
+                  Ver mapa
+                </a>
               )}
             </div>
+
+            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <Users className="h-4 w-4 mr-2" />
+              <span>{event.targetAudience}</span>
+            </div>
+          </div>
+
+          <div className="border-t dark:border-gray-700 pt-4">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex gap-4">
+                <button 
+                  onClick={() => handleReaction('like')}
+                  className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-blue-500"
+                >
+                  <ThumbsUp className="h-5 w-5" />
+                  <span className="text-sm">{event.reactions.like}</span>
+                </button>
+                <button
+                  onClick={() => handleReaction('love')}
+                  className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-red-500"
+                >
+                  <Zap className="h-5 w-5" />
+                  <span className="text-sm">{event.reactions.love}</span>
+                </button>
+                <button
+                  onClick={() => handleReaction('celebrate')}
+                  className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-yellow-500"
+                >
+                  <PartyPopper className="h-5 w-5" />
+                  <span className="text-sm">{event.reactions.celebrate}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                <MessageCircle className="h-5 w-5" />
+                <span>Comentarios ({event.comments.length})</span>
+              </div>
+
+             <div className="space-y-3">
+    {event.comments.map(comment => (
+      <div key={comment.id} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+            {comment.author}
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {format(comment.date, "d MMM HH:mm", { locale: es })}
+          </span>
+        </div>
+        <p className="text-gray-600 dark:text-gray-300 text-sm">
+          {comment.text}
+        </p>
+      </div>
+    ))}
+  </div>
+
+  {/* Formulario de Comentarios Modificado */}
+  <form onSubmit={handleAddComment} className="flex flex-col md:flex-row gap-2">
+    <input
+      type="text"
+      placeholder="Tu nombre"
+      value={commentAuthor}
+      onChange={(e) => setCommentAuthor(e.target.value)}
+      className="w-full md:w-32 px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm flex-none"
+      required
+    />
+    
+    <input
+      type="text"
+      placeholder="Escribe un comentario..."
+      value={newComment}
+      onChange={(e) => setNewComment(e.target.value)}
+      className="w-full flex-1 px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+      required
+    />
+    
+    <button
+      type="submit"
+      className="p-2 bg-cultural-escenicas text-white rounded-lg hover:bg-cultural-escenicas/90 self-stretch md:self-auto"
+    >
+      <Send className="h-5 w-5 mx-auto" />
+    </button>
+  </form>
+</div>
           </div>
         </div>
       </div>
-    </div>
+
+      <ShareModal
+        event={event}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
+    </>
   );
 };
