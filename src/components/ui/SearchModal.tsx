@@ -114,7 +114,7 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
               </button>
             </div>
 
-            <div className="flex space-x-2 mb-4">
+            <div className="flex justify-center md:justify-start space-x-2 mb-4 w-full"> 
               <button
                 onClick={() => setFilter('all')}
                 className={`px-3 py-1 rounded-full text-sm ${
@@ -147,7 +147,7 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
               </button>
              
             </div>
-<div className="flex space-x-2 mb-4"> 
+<div className="flex justify-center md:justify-start space-x-2 mb-4 w-full"> 
               <button
                 onClick={() => setFilter('contacts')}
                 className={`px-2 py-1 rounded-full text-sm ${
