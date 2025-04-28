@@ -155,18 +155,19 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
               >
                 Tareas
               </button>
+             
+            </div>
+<div className="flex space-x-2 mb-4"> 
               <button
                 onClick={() => setFilter('contacts')}
-                className={`px-3 py-1 rounded-full text-sm ${
+                className={`px-2 py-1 rounded-full text-sm ${
                   filter === 'contacts'
                     ? 'bg-cultural-escenicas text-white'
                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
                 Contactos
-              </button>
-            </div>
-
+              </button></div>
             <div className="max-h-96 overflow-y-auto">
               {results.length > 0 ? (
                 <div className="space-y-2">
