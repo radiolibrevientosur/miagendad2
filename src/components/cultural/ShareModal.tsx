@@ -1,183 +1,410 @@
-import React, { useRef } from 'react';
-import { Dialog } from '@headlessui/react';
-import { toPng } from 'html-to-image';
-import { 
-  WhatsappShareButton, 
-  FacebookShareButton, 
-  TelegramShareButton,
-  TwitterShareButton,
-  WhatsappIcon,
-  FacebookIcon,
-  TelegramIcon,
-  TwitterIcon
-} from 'react-share';
-import { X, Download, Copy, Check } from 'lucide-react';
-import type { CulturalEvent } from '../../types/cultural';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
+import React, { useState, useRef, useEffect } from 'react';
+import { CulturalProvider } from './context/CulturalContext';
+import { Calendar, Heart, Users, Home, PlusCircle, Sun, Moon, MoreVertical, Settings, Bell, LogOut, User, Search } from 'lucide-react';
+import { EventoCulturalForm } from './components/cultural/EventoCulturalForm';
+import { BirthdayForm } from './components/cultural/BirthdayForm';
+import { TaskForm } from './components/cultural/TaskForm';
+import { CreateMenu } from './components/cultural/CreateMenu';
+import { Favorites } from './components/cultural/Favorites';
+import { ContactList } from './components/cultural/ContactList';
+import { CalendarView } from './components/cultural/CalendarView';
+import { OfflineIndicator } from './components/ui/OfflineIndicator';
+import { NotificationList } from './components/ui/NotificationList';
+import { NotificationSettings } from './components/ui/NotificationSettings';
+import { UserProfile } from './components/cultural/UserProfile';
+import { LanguageSettings } from './components/ui/LanguageSettings';
+import { PrivacySettings } from './components/ui/PrivacySettings';
+import { SearchModal } from './components/ui/SearchModal';
+import { useTheme } from './hooks/useTheme';
+import { useNotifications } from './hooks/useNotifications';
+import { useCultural } from './context/CulturalContext';
+import type { ActiveView, CulturalEvent } from './types/cultural';
+import { EventCard } from './components/cultural/EventCard';
+import { BirthdayCulturalCard } from './components/cultural/BirthdayCulturalCard';
+import { TaskCulturalKanban } from './components/cultural/TaskCulturalKanban';
+import { ErrorBoundary } from 'react-error-boundary';
 
-interface ShareModalProps {
-  event?: CulturalEvent;
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  text?: string;
+function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
+  return (
+    <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+      <h2 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
+        Error en el componente
+      </h2>
+      <p className="text-red-600 dark:text-red-400 text-sm">
+        {error.message}
+      </p>
+      <button
+        onClick={resetErrorBoundary}
+        className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+      >
+        Reintentar
+      </button>
+    </div>
+  );
 }
 
-export const ShareModal: React.FC<ShareModalProps> = ({ event, isOpen, onClose, title, text }) => {
-  const [copied, setCopied] = React.useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const eventUrl = event ? `${window.location.origin}/evento/${event.id}` : '';
+function Dashboard() {
+  const { state } = useCultural();
+  const [editingEvent, setEditingEvent] = useState<CulturalEvent | null>(null);
 
-  const shareMessage = event ? `
-🎉 ¡Evento Cultural!
+  const safeEvents = state.events || [];
+  const safeBirthdays = state.birthdays || [];
+  const safeTasks = state.tasks || [];
+  
+  return (
+    <div className="space-y-8">
+      {editingEvent ? (
+        <EventoCulturalForm 
+          event={editingEvent} 
+          onComplete={() => setEditingEvent(null)} 
+        />
+      ) : (
+        <>
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Eventos Culturales
+            </h2>
+            {safeEvents.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {safeEvents.map(event => (
+                  <EventCard 
+                    key={event.id} 
+                    event={event} 
+                    onEdit={setEditingEvent}
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">
+                No hay eventos creados
+              </p>
+            )}
+          </section>
 
-📢 ${event.title}
-📅 ${format(event.date, "d 'de' MMMM", { locale: es })} | 🕒 ${format(event.date, 'HH:mm')}
-📍 ${event.location}
-👥 Público: ${event.targetAudience}
-🎭 ${event.category} - ${event.eventType}
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Próximos Cumpleaños
+            </h2>
+            {safeBirthdays.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {safeBirthdays.map(birthday => (
+                  <BirthdayCulturalCard key={birthday.id} birthday={birthday} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">
+                No hay cumpleaños registrados
+              </p>
+            )}
+          </section>
 
-${event.description}
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Tareas
+            </h2>
+            {safeTasks.length > 0 ? (
+              <TaskCulturalKanban tasks={safeTasks} />
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400">
+                No hay tareas creadas
+              </p>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  );
+}
 
-${event.cost.type === 'free' ? '🎟️ Entrada gratuita' : `💵 Precio: $${event.cost.amount}`}
+function App() {
+  const [activeView, setActiveView] = useState<ActiveView>('inicio');
+  const { theme, toggleTheme } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showLanguageSettings, setShowLanguageSettings] = useState(false);
+  const [showPrivacySettings, setShowPrivacySettings] = useState(false);
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const configRef = useRef<HTMLDivElement>(null);
+  const { unreadCount, isPermissionGranted, requestNotificationPermission } = useNotifications();
 
-🔗 Más información: ${eventUrl}
-`.trim() : text;
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const menu = menuRef.current;
+      const config = configRef.current;
+      
+      if (menu && !menu.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+      if (config && !config.contains(event.target as Node)) {
+        setIsConfigOpen(false);
+      }
+    };
 
-  const handleCopyText = async () => {
-    try {
-      await navigator.clipboard.writeText(shareMessage || '');
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Error al copiar:', err);
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    console.log('Cerrar sesión');
   };
 
-  const handleDownloadImage = async () => {
-    if (!cardRef.current) return;
+  const renderView = () => {
+    if (showProfile) {
+      return <UserProfile />;
+    }
 
-    try {
-      const dataUrl = await toPng(cardRef.current, {
-        quality: 1.0,
-        pixelRatio: 2
-      });
-      
-      const link = document.createElement('a');
-      link.download = `${event ? event.title : title || 'compartir'}.png`.toLowerCase().replace(/\s+/g, '-');
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Error al generar imagen:', err);
+    switch (activeView) {
+      case 'crear':
+        return <CreateMenu onSelectOption={setActiveView} />;
+      case 'nuevo-evento':
+        return <EventoCulturalForm onComplete={() => setActiveView('inicio')} />;
+      case 'nuevo-cumpleanos':
+        return <BirthdayForm onComplete={() => setActiveView('inicio')} />;
+      case 'nueva-tarea':
+        return <TaskForm onComplete={() => setActiveView('inicio')} />;
+      case 'favoritos':
+        return <Favorites />;
+      case 'contactos':
+        return <ContactList />;
+      case 'calendario':
+        return <CalendarView />;
+      default:
+        return <Dashboard />;
     }
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} className="relative z-50">
-      <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
-      
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <Dialog.Panel className="mx-auto max-w-2xl w-full bg-white dark:bg-gray-800 rounded-xl shadow-lg">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <Dialog.Title className="text-xl font-semibold text-gray-900 dark:text-white">
-                Compartir {event ? 'Evento' : ''}
-              </Dialog.Title>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            {/* Tarjeta de previsualización */}
-            <div 
-              ref={cardRef} 
-              className="bg-white dark:bg-gray-700 p-6 rounded-lg shadow-md mb-6"
-            >
-              {event ? (
-                <>
-                  {event.image?.data && (
-                    <img
-                      src={event.image.data}
-                      alt={event.title}
-                      className="w-full h-48 object-cover rounded-lg mb-4"
-                    />
-                  )}
-                  
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">{event.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mt-2">{event.description}</p>
-                  
-                  <div className="mt-4 space-y-2 text-sm text-gray-500 dark:text-gray-400">
-                    <p>📅 {format(event.date, "d 'de' MMMM, yyyy", { locale: es })}</p>
-                    <p>🕒 {format(event.date, 'HH:mm')}</p>
-                    <p>📍 {event.location}</p>
-                    <p>👥 {event.targetAudience}</p>
-                    <p>🎭 {event.category} - {event.eventType}</p>
-                    <p>{event.cost.type === 'free' ? '🎟️ Entrada gratuita' : `💵 Precio: $${event.cost.amount}`}</p>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    {title}
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line">
-                    {text}
-                  </p>
-                </>
-              )}
-            </div>
-
-            {/* Botones de compartir */}
-            <div className="space-y-6">
-              <div className="flex justify-center space-x-4">
-                <WhatsappShareButton url={eventUrl} title={shareMessage}>
-                  <WhatsappIcon size={40} round />
-                </WhatsappShareButton>
-                
-                <TelegramShareButton url={eventUrl} title={shareMessage}>
-                  <TelegramIcon size={40} round />
-                </TelegramShareButton>
-                
-                <FacebookShareButton url={eventUrl} quote={shareMessage}>
-                  <FacebookIcon size={40} round />
-                </FacebookShareButton>
-                
-                <TwitterShareButton url={eventUrl} title={shareMessage}>
-                  <TwitterIcon size={40} round />
-                </TwitterShareButton>
+    <CulturalProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+        <OfflineIndicator />
+        {showNotifications && (
+          <NotificationList onClose={() => setShowNotifications(false)} />
+        )}
+        {showSearchModal && (
+          <SearchModal isOpen={showSearchModal} onClose={() => setShowSearchModal(false)} />
+        )}
+        <header className="bg-white dark:bg-gray-800 shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex h-16 items-center justify-between">
+              <div className="flex-shrink-0 flex items-center">
+                <Calendar className="h-8 w-8 text-cultural-escenicas" />
+                <span className="ml-2 text-xl font-semibold text-gray-900 dark:text-white">
+                  Gestión Cultural
+                </span>
               </div>
-
-              <div className="flex justify-center space-x-4">
+              
+              <div className="flex items-center space-x-4">
                 <button
-                  onClick={handleCopyText}
-                  className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200"
+                  onClick={() => setShowSearchModal(true)}
+                  className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  {copied ? (
-                    <>
-                      <Check className="h-5 w-5 mr-2 text-green-500" />
-                      ¡Copiado!
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="h-5 w-5 mr-2" />
-                      Copiar texto
-                    </>
+                  <Search className="h-6 w-6" />
+                </button>
+                
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <MoreVertical className="h-6 w-6" />
+                  </button>
+
+                  {isMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 z-50">
+                      <button
+                        onClick={() => setShowNotifications(true)}
+                        className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
+                      >
+                        <div className="flex items-center">
+                          <Bell className="h-4 w-4 mr-2" />
+                          Notificaciones
+                        </div>
+                        {unreadCount > 0 && (
+                          <span className="bg-cultural-escenicas text-white text-xs px-2 py-1 rounded-full">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+
+                      <NotificationSettings
+                        onChange={(enabled) => {
+                          if (enabled && !isPermissionGranted) {
+                            requestNotificationPermission();
+                          }
+                        }}
+                      />
+
+                      <button
+                        onClick={() => {
+                          setShowProfile(true);
+                          setIsMenuOpen(false);
+                        }}
+                        className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                      >
+                        <User className="h-4 w-4 mr-2" />
+                        Mi Cuenta
+                      </button>
+
+                      <button
+                        className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                        onClick={toggleTheme}
+                      >
+                        {theme === 'dark' ? (
+                          <Sun className="h-4 w-4 mr-2" />
+                        ) : (
+                          <Moon className="h-4 w-4 mr-2" />
+                        )}
+                        Modo {theme === 'dark' ? 'Claro' : 'Oscuro'}
+                      </button>
+
+                      <div className="relative" ref={configRef}>
+                        <button
+                          className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
+                          onClick={() => setIsConfigOpen(!isConfigOpen)}
+                        >
+                          <div className="flex items-center">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Configuración
+                          </div>
+                          <span className="text-xs">▼</span>
+                        </button>
+
+                        {isConfigOpen && (
+                          <div className="absolute left-0 top-full w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 mt-1 z-50">
+                            <button
+                              onClick={() => {
+                                setShowLanguageSettings(true);
+                                setIsMenuOpen(false);
+                                setIsConfigOpen(false);
+                              }}
+                              className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Idioma
+                            </button>
+                            <button
+                              onClick={() => {
+                                setShowPrivacySettings(true);
+                                setIsMenuOpen(false);
+                                setIsConfigOpen(false);
+                              }}
+                              className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            >
+                              Privacidad
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <hr className="my-1 border-gray-200 dark:border-gray-700" />
+
+                      <button
+                        className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                        onClick={handleLogout}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Cerrar Sesión
+                      </button>
+                    </div>
                   )}
-                </button>
-
-                <button
-                  onClick={handleDownloadImage}
-                  className="flex items-center px-4 py-2 bg-cultural-escenicas text-white rounded-md hover:bg-cultural-escenicas/90"
-                >
-                  <Download className="h-5 w-5 mr-2" />
-                  Descargar imagen
-                </button>
+                </div>
               </div>
             </div>
           </div>
-        </Dialog.Panel>
+        </header>
+
+        <main className="flex-1 max-w-7xl w-full mx-auto py-6 sm:px-6 lg:px-8 mb-16">
+          <div className="px-4 py-6 sm:px-0">
+            <ErrorBoundary
+              FallbackComponent={ErrorFallback}
+              onReset={() => {
+                setActiveView('inicio');
+                setShowProfile(false);
+                setShowLanguageSettings(false);
+                setShowPrivacySettings(false);
+              }}
+            >
+              {showLanguageSettings ? (
+                <LanguageSettings />
+              ) : showPrivacySettings ? (
+                <PrivacySettings />
+              ) : (
+                renderView()
+              )}
+            </ErrorBoundary>
+          </div>
+        </main>
+
+        <nav className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 fixed bottom-0 w-full">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-around h-16">
+              <button
+                onClick={() => {
+                  setActiveView('inicio');
+                  setShowProfile(false);
+                }}
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  activeView === 'inicio' ? 'text-cultural-escenicas' : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <Home className="h-6 w-6" />
+                <span className="mt-1 text-xs">Inicio</span>
+              </button> <button
+                onClick={() => {
+                  setActiveView('favoritos');
+                  setShowProfile(false);
+                }}
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  activeView === 'favoritos' ? 'text-cultural-visuales' : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <Heart className="h-6 w-6" />
+                <span className="mt-1 text-xs">Favoritos</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveView('crear');
+                  setShowProfile(false);
+                }}
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  activeView === 'crear' ? 'text-cultural-escenicas' : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <PlusCircle className="h-6 w-6" />
+                <span className="mt-1 text-xs">Crear</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveView('calendario');
+                  setShowProfile(false);
+                }}
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  activeView === 'calendario' ? 'text-cultural-musicales' : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <Calendar className="h-6 w-6" />
+                <span className="mt-1 text-xs">Calendario</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveView('contactos');
+                  setShowProfile(false);
+                }}
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  activeView === 'contactos' ? 'text-cultural-musicales' : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <Users className="h-6 w-6" />
+                <span className="mt-1 text-xs">Contactos</span>
+              </button>
+            </div>
+          </div>
+        </nav>
       </div>
-    </Dialog>
+    </CulturalProvider>
   );
-};
+}
+
+export default App;
