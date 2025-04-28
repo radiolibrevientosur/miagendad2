@@ -351,6 +351,17 @@ function App() {
               >
                 <Home className="h-6 w-6" />
                 <span className="mt-1 text-xs">Inicio</span>
+              </button> <button
+                onClick={() => {
+                  setActiveView('favoritos');
+                  setShowProfile(false);
+                }}
+                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
+                  activeView === 'favoritos' ? 'text-cultural-visuales' : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                <Heart className="h-6 w-6" />
+                <span className="mt-1 text-xs">Favoritos</span>
               </button>
               <button
                 onClick={() => {
@@ -363,18 +374,6 @@ function App() {
               >
                 <PlusCircle className="h-6 w-6" />
                 <span className="mt-1 text-xs">Crear</span>
-              </button>
-              <button
-                onClick={() => {
-                  setActiveView('favoritos');
-                  setShowProfile(false);
-                }}
-                className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                  activeView === 'favoritos' ? 'text-cultural-visuales' : 'text-gray-500 dark:text-gray-400'
-                }`}
-              >
-                <Heart className="h-6 w-6" />
-                <span className="mt-1 text-xs">Favoritos</span>
               </button>
               <button
                 onClick={() => {
