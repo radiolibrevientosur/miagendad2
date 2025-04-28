@@ -179,7 +179,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit }) => {
                   onClick={() => handleReaction('love')}
                   className="flex items-center gap-1 text-gray-600 dark:text-gray-300 hover:text-red-500"
                 >
-                  <Zap className="h-5 w-5" />
+                  <Heart className="h-5 w-5" />
                   <span className="text-sm">{event.reactions.love}</span>
                 </button>
                 <button
