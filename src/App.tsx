@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CulturalProvider } from './context/CulturalContext';
-import { Calendar, Heart, Users, Home, PlusCircle, Sun, Moon, MoreVertical, Settings, Bell, LogOut, User, Search } from 'lucide-react';
+import { Calendar, Heart, Users, Home, PlusCircle, Sun, Moon, MoreVertical, Settings, Bell, LogOut, User, Search, Star } from 'lucide-react';
 import { EventoCulturalForm } from './components/cultural/EventoCulturalForm';
 import { BirthdayForm } from './components/cultural/BirthdayForm';
 import { TaskForm } from './components/cultural/TaskForm';
@@ -360,7 +360,7 @@ function App() {
                   activeView === 'favoritos' ? 'text-cultural-visuales' : 'text-gray-500 dark:text-gray-400'
                 }`}
               >
-                <Heart className="h-6 w-6" />
+                <Star className="h-6 w-6" />
                 <span className="mt-1 text-xs">Favoritos</span>
               </button>
               <button
