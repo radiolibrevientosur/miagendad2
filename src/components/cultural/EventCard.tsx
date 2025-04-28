@@ -13,7 +13,8 @@ import {
   ThumbsUp, 
   Zap, 
   PartyPopper, 
-  Send 
+  Send, 
+  Star
 } from 'lucide-react';
 import type { CulturalEvent, ReactionType, Comment } from '../../types/cultural';
 import { useCultural } from '../../context/CulturalContext';
@@ -119,7 +120,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, onEdit }) => {
                 onClick={toggleFavorite}
                 className={`p-2 ${event.isFavorite ? 'text-red-500' : 'text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300'}`}
               >
-                <Heart className="h-5 w-5" fill={event.isFavorite ? "currentColor" : "none"} />
+                <Star className="h-5 w-5" fill={event.isFavorite ? "currentColor" : "none"} />
               </button>
               <button
                 onClick={() => setIsEditing(true)}
