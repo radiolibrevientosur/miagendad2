@@ -93,7 +93,7 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
       <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
       <div className="relative min-h-screen flex items-center justify-center p-4">
         <div className="relative bg-white dark:bg-gray-800 w-full max-w-2xl rounded-xl shadow-2xl">
-          <div className="p-6">
+          <div className="p-3">
             <div className="flex justify-between items-center mb-4">
               <div className="relative flex-1 mr-4">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -120,7 +120,7 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                 className={`px-3 py-1 rounded-full text-sm ${
                   filter === 'all'
                     ? 'bg-cultural-escenicas text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                    : 'bg-gray-100 dark:bg-gray-00 text-gray-700 dark:text-gray-300'
                 }`}
               >
                 Todos
@@ -134,16 +134,6 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                 }`}
               >
                 Eventos
-              </button>
-              <button
-                onClick={() => setFilter('birthdays')}
-                className={`px-3 py-1 rounded-full text-sm ${
-                  filter === 'birthdays'
-                    ? 'bg-cultural-escenicas text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                Cumpleaños
               </button>
               <button
                 onClick={() => setFilter('tasks')}
@@ -167,6 +157,15 @@ export const SearchModal: React.FC<{ isOpen: boolean; onClose: () => void }> = (
                 }`}
               >
                 Contactos
+              </button><button
+                onClick={() => setFilter('birthdays')}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  filter === 'birthdays'
+                    ? 'bg-cultural-escenicas text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                Cumpleaños
               </button></div>
             <div className="max-h-96 overflow-y-auto">
               {results.length > 0 ? (
