@@ -18,6 +18,8 @@ import { SearchModal } from './components/ui/SearchModal';
 import { useTheme } from './hooks/useTheme';
 import { useNotifications } from './hooks/useNotifications';
 import { useCultural } from './context/CulturalContext';
+import { AuthForm } from './components/auth/AuthForm';
+import { supabase } from './lib/supabase';
 import type { ActiveView } from './types/cultural';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Feed } from './components/cultural/Feed';
@@ -52,9 +54,24 @@ function App() {
   const [showLanguageSettings, setShowLanguageSettings] = useState(false);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
+  const [session, setSession] = useState(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const configRef = useRef<HTMLDivElement>(null);
   const { unreadCount, isPermissionGranted, requestNotificationPermission } = useNotifications();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -72,6 +89,18 @@ function App() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <AuthForm />
+      </div>
+    );
+  }
 
   const navigationItems = [
     { view: 'inicio', icon: Home, label: 'Inicio', color: 'cultural-escenicas' },
@@ -199,7 +228,7 @@ function App() {
                       <hr className="my-1 border-gray-200 dark:border-gray-700" />
 
                       <button
-                        onClick={() => console.log('Cerrar sesión')}
+                        onClick={handleSignOut}
                         className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
                       >
                         <LogOut className="h-4 w-4 mr-2" />
@@ -250,7 +279,6 @@ function App() {
         </nav>
       </div>
     </CulturalProvider>
-    
   );
 }
 
