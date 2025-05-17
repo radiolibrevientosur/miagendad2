@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { CulturalProvider } from './context/CulturalContext';
-import { Calendar, Heart, Users, Home, PlusCircle, Sun, Moon, MoreVertical, Settings, Bell, LogOut, User, Search } from 'lucide-react';
+import { Calendar, Heart, Users, Home, PlusCircle, Sun, Moon, MoreVertical, Settings, Bell, LogOut, Search } from 'lucide-react';
+import { AuthForm } from './components/auth/AuthForm';
 import { EventoCulturalForm } from './components/cultural/EventoCulturalForm';
 import { BirthdayForm } from './components/cultural/BirthdayForm';
 import { TaskForm } from './components/cultural/TaskForm';
@@ -11,19 +12,14 @@ import { CalendarView } from './components/cultural/CalendarView';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import { NotificationList } from './components/ui/NotificationList';
 import { NotificationSettings } from './components/ui/NotificationSettings';
-import { UserProfile } from './components/cultural/UserProfile';
 import { LanguageSettings } from './components/ui/LanguageSettings';
 import { PrivacySettings } from './components/ui/PrivacySettings';
 import { SearchModal } from './components/ui/SearchModal';
 import { useTheme } from './hooks/useTheme';
 import { useNotifications } from './hooks/useNotifications';
-import { useCultural } from './context/CulturalContext';
-import { AuthForm } from './components/auth/AuthForm';
-import { supabase } from './lib/supabase';
 import type { ActiveView } from './types/cultural';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Feed } from './components/cultural/Feed';
-import { QuickPost } from './components/cultural/QuickPost';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -45,33 +41,18 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
 }
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeView, setActiveView] = useState<ActiveView>('inicio');
   const { theme, toggleTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
   const [showLanguageSettings, setShowLanguageSettings] = useState(false);
   const [showPrivacySettings, setShowPrivacySettings] = useState(false);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [session, setSession] = useState(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const configRef = useRef<HTMLDivElement>(null);
   const { unreadCount, isPermissionGranted, requestNotificationPermission } = useNotifications();
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -90,16 +71,8 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  if (!session) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <AuthForm />
-      </div>
-    );
+  if (!isAuthenticated) {
+    return <AuthForm onAuthSuccess={() => setIsAuthenticated(true)} />;
   }
 
   const navigationItems = [
@@ -111,8 +84,6 @@ function App() {
   ];
 
   const renderView = () => {
-    if (showProfile) return <UserProfile />;
-    
     switch (activeView) {
       case 'crear': return <CreateMenu onSelectOption={setActiveView} />;
       case 'nuevo-evento': return <EventoCulturalForm onComplete={() => setActiveView('inicio')} />;
@@ -180,14 +151,6 @@ function App() {
                       />
 
                       <button
-                        onClick={() => { setShowProfile(true); setIsMenuOpen(false); }}
-                        className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Mi Perfil
-                      </button>
-
-                      <button
                         className="w-full px-4 py-2 text-left text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
                         onClick={toggleTheme}
                       >
@@ -228,7 +191,7 @@ function App() {
                       <hr className="my-1 border-gray-200 dark:border-gray-700" />
 
                       <button
-                        onClick={handleSignOut}
+                        onClick={() => setIsAuthenticated(false)}
                         className="w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
                       >
                         <LogOut className="h-4 w-4 mr-2" />
@@ -248,7 +211,6 @@ function App() {
               FallbackComponent={ErrorFallback}
               onReset={() => {
                 setActiveView('inicio');
-                setShowProfile(false);
                 setShowLanguageSettings(false);
                 setShowPrivacySettings(false);
               }}
@@ -265,7 +227,7 @@ function App() {
               {navigationItems.map(({ view, icon: Icon, label, color }) => (
                 <button
                   key={view}
-                  onClick={() => { setActiveView(view); setShowProfile(false); }}
+                  onClick={() => setActiveView(view)}
                   className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                     activeView === view ? `text-${color}` : 'text-gray-500 dark:text-gray-400'
                   }`}
