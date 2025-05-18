@@ -25,13 +25,13 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
   const validateForm = () => {
     if (!email.includes('@')) {
-      throw new Error('Please enter a valid email address');
+      throw new Error('Por favor ingresa un correo electrónico válido');
     }
     if (password.length < 6) {
-      throw new Error('Password must be at least 6 characters');
+      throw new Error('La contraseña debe tener al menos 6 caracteres');
     }
     if (isSignUp && (!username.startsWith('@') || username.length < 4)) {
-      throw new Error('Username must start with @ and be 4+ characters');
+      throw new Error('El nombre de usuario debe comenzar con @ y tener al menos 4 caracteres');
     }
   };
 
@@ -43,7 +43,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
       .maybeSingle();
 
     if (searchError) throw searchError;
-    if (data) throw new Error('Username not available');
+    if (data) throw new Error('Nombre de usuario no disponible');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,7 +97,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
       onAuthSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
+      setError(err instanceof Error ? err.message : 'Error de autenticación');
     } finally {
       setLoading(false);
     }
@@ -108,10 +108,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white">
-            {isSignUp ? 'Create Account' : 'Welcome Back'}
+            {isSignUp ? 'Crear Cuenta' : 'Bienvenido de Nuevo'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            {isSignUp ? 'Join our community' : 'Access your cultural profile'}
+            {isSignUp ? 'Únete a nuestra comunidad' : 'Accede a tu perfil cultural'}
           </p>
         </div>
 
@@ -119,7 +119,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
           {isSignUp && (
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Username
+                Nombre de Usuario
               </label>
               <input
                 id="username"
@@ -136,7 +136,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Email
+              Correo Electrónico
             </label>
             <input
               id="email"
@@ -150,7 +150,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
+              Contraseña
             </label>
             <input
               id="password"
@@ -180,9 +180,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                 </svg>
-                Processing...
+                Procesando...
               </span>
-            ) : isSignUp ? 'Create Account' : 'Sign In'}
+            ) : isSignUp ? 'Crear Cuenta' : 'Iniciar Sesión'}
           </button>
 
           <div className="text-center">
@@ -194,7 +194,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
               }}
               className="text-sm text-cultural-escenicas hover:text-cultural-escenicas/90 font-medium"
             >
-              {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+              {isSignUp ? '¿Ya tienes una cuenta? Inicia Sesión' : '¿Necesitas una cuenta? Regístrate'}
             </button>
           </div>
         </form>
