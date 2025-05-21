@@ -2,10 +2,9 @@
   command = "npm run build"
   publish = "dist"
 
-env = { 
+[build.environment]
   VITE_SUPABASE_URL = "https://nmesjfztgijlrwtrszsg.supabase.co"
   VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5tZXNqZnp0Z2lqbHJ3dHJzenNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc4NTU3ODksImV4cCI6MjA2MzQzMTc4OX0.14ZSEIWF1YHbPZKJPap3nlGfxwcgtD5-P-ozbx2_JFs"
-}
 
 [[redirects]]
   from = "/api/*"
