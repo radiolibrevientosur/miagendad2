@@ -7,7 +7,6 @@ import { BirthdayForm } from './components/cultural/BirthdayForm';
 import { TaskForm } from './components/cultural/TaskForm';
 import { CreateMenu } from './components/cultural/CreateMenu';
 import { Favorites } from './components/cultural/Favorites';
-import { ContactList } from './components/cultural/ContactList';
 import { CalendarView } from './components/cultural/CalendarView';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import { NotificationList } from './components/ui/NotificationList';
@@ -20,6 +19,7 @@ import { useNotifications } from './hooks/useNotifications';
 import type { ActiveView } from './types/cultural';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Feed } from './components/cultural/Feed';
+import UserList from './components/cultural/UserList';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -90,7 +90,7 @@ function App() {
       case 'nuevo-cumpleanos': return <BirthdayForm onComplete={() => setActiveView('inicio')} />;
       case 'nueva-tarea': return <TaskForm onComplete={() => setActiveView('inicio')} />;
       case 'favoritos': return <Favorites />;
-      case 'contactos': return <ContactList />;
+      case 'contactos': return <UserList />;
       case 'calendario': return <CalendarView />;
       default: return <Feed />;
     }
@@ -227,7 +227,7 @@ function App() {
               {navigationItems.map(({ view, icon: Icon, label, color }) => (
                 <button
                   key={view}
-                  onClick={() => setActiveView(view)}
+                  onClick={() => setActiveView(view as ActiveView)}
                   className={`flex flex-col items-center justify-center w-full hover:bg-gray-50 dark:hover:bg-gray-700 ${
                     activeView === view ? `text-${color}` : 'text-gray-500 dark:text-gray-400'
                   }`}
