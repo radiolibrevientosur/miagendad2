@@ -12,12 +12,32 @@ export const QuickPost: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuthAndUser = async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
       if (error) toast.error('Error de autenticación');
       setUserId(user?.id || null);
+
+      // Auto-sync: si el usuario está autenticado pero no existe en la tabla users, crearlo
+      if (user?.id) {
+        const { data: userRow, error: userRowError } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (!userRow && !userRowError) {
+          // Crear registro mínimo en users
+          await supabase.from('users').insert({
+            id: user.id,
+            username: user.user_metadata?.username || `@usuario${user.id.slice(0, 6)}`,
+            full_name: user.user_metadata?.full_name || null,
+            avatar_url: user.user_metadata?.avatar_url || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        }
+      }
     };
-    checkAuth();
+    checkAuthAndUser();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
