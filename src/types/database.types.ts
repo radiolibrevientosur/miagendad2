@@ -50,6 +50,29 @@ export interface Database {
           updated_at?: string | null
         }
       }
+      posts: {
+        Row: {
+          id: string;
+          user_id: string;
+          content: string | null;
+          media_urls: string[] | null;
+          created_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          content?: string | null;
+          media_urls?: string[] | null;
+          created_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          content?: string | null;
+          media_urls?: string[] | null;
+          created_at?: string | null;
+        };
+      };
       [key: string]: any
     }
   }
