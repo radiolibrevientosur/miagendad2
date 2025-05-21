@@ -20,6 +20,7 @@ import type { ActiveView } from './types/cultural';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Feed } from './components/cultural/Feed';
 import UserList from './components/cultural/UserList';
+import { supabase } from './lib/supabase';
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {
   return (
@@ -69,6 +70,17 @@ function App() {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    // Detectar sesión activa al cargar la app (incluye login con Google)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) setIsAuthenticated(true);
+    });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session?.user);
+    });
+    return () => data.subscription.unsubscribe();
   }, []);
 
   if (!isAuthenticated) {
