@@ -1,3 +1,5 @@
+import type { Database as SupabaseDatabase } from './database.types';
+
 export type Json =
   | string
   | number
@@ -6,32 +8,4 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
-  public: {
-    Tables: {
-      posts: {
-        Row: {
-          id: string
-          user_id: string
-          content: string
-          media_urls: string[] | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          content: string
-          media_urls?: string[] | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          content?: string
-          media_urls?: string[] | null
-          created_at?: string
-        }
-      }
-    }
-  }
-}
+export type Database = SupabaseDatabase;
