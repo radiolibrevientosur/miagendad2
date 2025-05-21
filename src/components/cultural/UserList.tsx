@@ -1,8 +1,6 @@
-[file name]: UserList.tsx
-[file content begin]
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../utils/supabaseClient';
-import { User } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
+import { Users, User as UserIcon } from 'lucide-react';
 
 interface ContactUser {
   id: string;
@@ -68,7 +66,7 @@ export const UserList: React.FC = () => {
               />
             ) : (
               <div className="h-10 w-10 rounded-full bg-cultural-escenicas flex items-center justify-center">
-                <User className="h-5 w-5 text-white" />
+                <UserIcon className="h-5 w-5 text-white" />
               </div>
             )}
             <div className="ml-4">
@@ -91,4 +89,3 @@ export const UserList: React.FC = () => {
     </div>
   );
 };
-[file content end]

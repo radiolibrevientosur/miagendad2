@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '../../lib/supabase';
 
 interface AuthFormProps {
   onAuthSuccess: () => void;
@@ -103,12 +98,30 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/dashboard'
+        }
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error de autenticación con Google');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
         <div>
           <h2 className="text-center text-3xl font-bold text-gray-900 dark:text-white">
-            {isSignUp ? 'Crear Cuenta' : 'Bienvenido de Nuevo'}
+            {isSignUp ? 'Crear Cuenta' : 'Iniciar Sesión'}
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
             {isSignUp ? 'Únete a nuestra comunidad' : 'Accede a tu perfil cultural'}
@@ -183,6 +196,16 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onAuthSuccess }) => {
                 Procesando...
               </span>
             ) : isSignUp ? 'Crear Cuenta' : 'Iniciar Sesión'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            disabled={loading}
+            className="w-full flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 mt-2"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5 mr-2" style={{ display: 'inline' }} />
+            Iniciar sesión con Google
           </button>
 
           <div className="text-center">
