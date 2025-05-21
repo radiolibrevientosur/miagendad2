@@ -37,7 +37,11 @@ export const QuickPost: React.FC = () => {
           created_at: new Date().toISOString()
         });
 
-      if (error) throw error;
+      if (error) {
+        // Mostrar el error completo de Supabase
+        toast.error(`Error Supabase: ${error.message} (${error.details || ''})`);
+        throw error;
+      }
 
       setContent('');
       toast.success('¡Publicado exitosamente!');
